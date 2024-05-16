@@ -12,13 +12,14 @@
         android:id="@+id/et_msg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"/>
+        android:textSize="24sp"
+        android:visibility="gone"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_emulate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="emulate"
+        android:text="start emulation"
         android:layout_marginTop="18dp"/>
 
 </LinearLayout>

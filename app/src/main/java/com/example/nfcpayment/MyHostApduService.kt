@@ -19,16 +19,15 @@ class MyHostApduService: HostApduService() {
             0x04.toByte(),
         )
 
+        const val STATUS_NEXT = "61FF"
         const val STATUS_SUCCESS = "9000"
         const val STATUS_FAILED = "0000"
-        const val CLA_NOT_SUPPORTED = "6E00"
-        const val INS_NOT_SUPPORTED = "6D00"
         const val AID = "A0000006022020"
-        const val SELECT_INS = "A4"
-        const val DEFAULT_CLA = "00"
         const val MIN_APDU_LENGTH = 12
-        const val SEND_PAYLOAD = "00B20100"
-        const val SEND_PAYLOAD1 = "00B20200"
+
+        const val CMD_FIRST_REQ = "00A40400"
+        const val CMD_NEXT_REQ = "00B20100"
+        const val CMD_LAST_REQ = "00B20200"
 
     }
 
@@ -64,12 +63,10 @@ class MyHostApduService: HostApduService() {
         return Service.START_STICKY_COMPATIBILITY
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun processCommandApdu(commandApdu: ByteArray?, p1: Bundle?): ByteArray {
-        val payload = "test test test test test tset test test test test test test test test "
-        val payload2 = "test test test test test tes test test"
-
-        val payloadByteArray = payload.toByteArray()
-        val paylaodByteArray2 = payload2.toByteArray()
+        val payload = "hQVDUFYwMWFmTwegAAAGAiAgUAdRUklTQ1BNWgqTYAACESGYYpUvXyARUkVORFkgTVVIQVJESUFOVE9"
+        val payload2 = "fLQRpZGVuX1AYcm11aGFyZGlhbnRvQGhvdG1haWwuY29tnyUCYpVjC590CDRiODg5MGY1"
 
         if (commandApdu == null) {
             log("null")
@@ -83,18 +80,40 @@ class MyHostApduService: HostApduService() {
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
 
-        if (hexCommandApdu == "00A4040007A0000006022020")  {
+        val length = hexCommandApdu.substring(8,10).toInt()
+        val bodyLength = length * 2
+        val bodyFirstPos = 10
+        val bodyLastPos = bodyFirstPos + bodyLength
+
+        log("length : $length")
+        log("bodyLength : $bodyLength")
+        log("bodyFirst : $bodyFirstPos")
+        log("bodyLastPos : $bodyLastPos")
+        log("aid : ${hexCommandApdu.substring(bodyFirstPos, bodyLastPos)}")
+        log("firstCom : ${hexCommandApdu.substring(0, 8)}")
+
+
+        if (hexCommandApdu.substring(bodyFirstPos, bodyLastPos) == AID && hexCommandApdu.substring(0, 8) == CMD_FIRST_REQ) {
+            log("firstCommand : ${hexCommandApdu.substring(0, 8)}")
             return Utils.hexStringToByteArray(STATUS_SUCCESS)
         }
 
-        if (hexCommandApdu == "00B2010007A0000006022020") {
-            return payloadByteArray + Utils.hexStringToByteArray("61FF")
+        if (hexCommandApdu.substring(0, 8) == CMD_NEXT_REQ) {
+            log("secondCommand : ${hexCommandApdu.substring(0, 8)}")
+            val hex = stringToHex(payload)
+            val firstPayload = hex + STATUS_NEXT
+            log(firstPayload)
+            return firstPayload.hexToByteArray()
         }
 
-        return if (hexCommandApdu == "00B2020007A0000006022020") {
-            paylaodByteArray2 + Utils.hexStringToByteArray(STATUS_SUCCESS)
+        return if (hexCommandApdu.substring(0, 8) == CMD_LAST_REQ) {
+            log("lastCommand : ${hexCommandApdu.substring(0, 8)}")
+            val hex = stringToHex(payload2)
+            val secondPayload = hex + STATUS_SUCCESS
+            log(secondPayload)
+            return secondPayload.hexToByteArray()
         } else {
-            Utils.hexStringToByteArray(STATUS_FAILED)
+            STATUS_FAILED.hexToByteArray()
         }
 
     }
@@ -105,5 +124,14 @@ class MyHostApduService: HostApduService() {
 
     private fun log(message: String){
         Log.d("MY_APDU_SERVICE", message)
+    }
+
+    private fun stringToHex(input: String): String {
+        val hexString = StringBuilder()
+        for (char in input) {
+            val hex = Integer.toHexString(char.code)
+            hexString.append(hex)
+        }
+        return hexString.toString()
     }
 }

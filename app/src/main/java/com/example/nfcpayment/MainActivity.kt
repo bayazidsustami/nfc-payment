@@ -20,16 +20,16 @@ class MainActivity : AppCompatActivity() {
         val btnEmulate = findViewById<AppCompatButton>(R.id.btn_emulate)
 
         btnEmulate.setOnClickListener {
-            val inputtedText = etInput.text.toString()
+            /*val inputtedText = etInput.text.toString()
 
             if (inputtedText.isEmpty()) {
                 showToast("payload can't be empty")
                 return@setOnClickListener
-            }
+            }*/
 
             if (isNfcAvailable()) {
                 val serviceIntent = Intent(this, MyHostApduService::class.java).also {
-                    it.putExtra(MyHostApduService.PAYLOAD_EXTRAS, inputtedText)
+                    it.putExtra(MyHostApduService.PAYLOAD_EXTRAS, "empty")
                 }
                 startService(serviceIntent)
             } else {
