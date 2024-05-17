@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.NFC_PREFERRED_PAYMENT_INFO"/>
+
+    <uses-feature android:name="android.hardware.nfc.hce"
+        android:required="true"/>
 
     <application
         android:allowBackup="true"
