@@ -63,10 +63,9 @@ class MyHostApduService: HostApduService() {
         return Service.START_STICKY_COMPATIBILITY
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun processCommandApdu(commandApdu: ByteArray?, p1: Bundle?): ByteArray {
-        val payload = "hQVDUFYwMWFmTwegAAAGAiAgUAdRUklTQ1BNWgqTYAACESGYYpUvXyARUkVORFkgTVVIQVJESUFOVE9"
-        val payload2 = "fLQRpZGVuX1AYcm11aGFyZGlhbnRvQGhvdG1haWwuY29tnyUCYpVjC590CDRiODg5MGY1"
+        val payload = "okeoke"
+        val payload2 = "okeokeoke"
 
         if (commandApdu == null) {
             log("null")
@@ -103,7 +102,7 @@ class MyHostApduService: HostApduService() {
             val hex = stringToHex(payload)
             val firstPayload = hex + STATUS_NEXT
             log(firstPayload)
-            return firstPayload.hexToByteArray()
+            return firstPayload.hexStringToByteArray()
         }
 
         return if (hexCommandApdu.substring(0, 8) == CMD_LAST_REQ) {
@@ -111,9 +110,9 @@ class MyHostApduService: HostApduService() {
             val hex = stringToHex(payload2)
             val secondPayload = hex + STATUS_SUCCESS
             log(secondPayload)
-            return secondPayload.hexToByteArray()
+            return secondPayload.hexStringToByteArray()
         } else {
-            STATUS_FAILED.hexToByteArray()
+            STATUS_FAILED.hexStringToByteArray()
         }
 
     }
@@ -133,5 +132,9 @@ class MyHostApduService: HostApduService() {
             hexString.append(hex)
         }
         return hexString.toString()
+    }
+
+    private fun String.hexStringToByteArray() = ByteArray(this.length / 2) {
+        this.substring(it * 2, it * 2 + 2).toInt(16).toByte()
     }
 }
