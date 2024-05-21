@@ -64,8 +64,8 @@ class MyHostApduService: HostApduService() {
     }
 
     override fun processCommandApdu(commandApdu: ByteArray?, p1: Bundle?): ByteArray {
-        val payload = "okeoke"
-        val payload2 = "okeokeoke"
+        val payload = "hQVDUFYwMWFmTwegAAAGAiAgUAdRUklTQ1BNWgqTYAACESGYYpUvXyARUkVORFkgTVVIQVJESUFOVE9fLQRp"
+        val payload2 = "ZGVuX1AYcm11aGFyZGlhbnRvQGhvdG1haWwuY29tnyUCYpVjC590CDRiODg5MGY1"
 
         if (commandApdu == null) {
             log("null")
