@@ -1,82 +1,47 @@
 package com.example.nfcpayment
 
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.nfc.NfcManager
-import android.nfc.cardemulation.CardEmulation
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatEditText
+import id.co.bri.brimo.nfcpayment.NFCPayment
+import id.co.bri.brimo.nfcpayment.NFCPaymentService
 
 class MainActivity : AppCompatActivity() {
 
-    private var hasStarted = false
-    private var cardEmulation: CardEmulation? = null
+    private val nfcPayment by lazy { NFCPayment.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val nfcManager = getSystemService(Context.NFC_SERVICE) as NfcManager
-        val nfcAdapter = nfcManager.defaultAdapter
-
-        cardEmulation = CardEmulation.getInstance(nfcAdapter)
-
         val btnEmulate = findViewById<AppCompatButton>(R.id.btn_emulate)
+        val etPayload = findViewById<AppCompatEditText>(R.id.et_msg)
 
         btnEmulate.setOnClickListener {
 
-            if (isNfcAvailable()) {
-                if (!isDefaultService()) {
-                    Log.d("MY", "is not default")
-                    navigateToChangeDefault()
+            if (nfcPayment.isNfcAvailable()) {
+                if (!nfcPayment.isDefaultService()) {
+                    nfcPayment.changeDefaultPaymentService(this)
                     return@setOnClickListener
                 }
-                hasStarted = true
-               startService()
+                val payload = etPayload.text?.trim().toString()
+               startService(payload)
             } else {
-                showToast("nfc not available or not active please check it")
+                Toast.makeText(this, "nfc not available or not active please check it", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun startService() {
-        val serviceIntent = Intent(this, MyHostApduService::class.java).also {
-            it.putExtra(MyHostApduService.PAYLOAD_EXTRAS, "empty")
+    private fun startService(payload: String) {
+        val serviceIntent = Intent(this, NFCPaymentService::class.java).also {
+            it.putExtra(NFCPaymentService.PAYLOAD_EXTRAS, payload)
         }
         startService(serviceIntent)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        cardEmulation?.setPreferredService(this, ComponentName(this, MyHostApduService::class.java))
-    }
-
-    private fun isNfcAvailable() : Boolean {
-        val nfcManager = getSystemService(Context.NFC_SERVICE) as NfcManager
-        val nfcAdapter = nfcManager.defaultAdapter
-        return nfcAdapter != null && nfcAdapter.isEnabled
-    }
-
-    private fun isDefaultService(): Boolean {
-        return cardEmulation?.isDefaultServiceForCategory(
-            ComponentName(this, MyHostApduService::class.java),
-            CardEmulation.CATEGORY_PAYMENT
-        ) == true
-    }
-
-    private fun navigateToChangeDefault() {
-        val intent = Intent(CardEmulation.ACTION_CHANGE_DEFAULT)
-        intent.putExtra(
-            CardEmulation.EXTRA_SERVICE_COMPONENT,
-            ComponentName("com.example.nfcpayment", "com.example.nfcpayment.MyHostApduService")
-        )
-        intent.putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_PAYMENT)
-        startActivity(intent)
     }
 
 }

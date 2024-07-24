@@ -11,9 +11,9 @@
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/et_msg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="128dp"
         android:textSize="24sp"
-        android:visibility="gone"/>
+        android:maxLines="10"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_emulate"
